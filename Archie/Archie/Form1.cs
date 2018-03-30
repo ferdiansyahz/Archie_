@@ -31,17 +31,16 @@ namespace Archie
 
         protected override void WndProc(ref Message m)
         {
-            const int WM_NCLBUTTONDOWN = 161;
-            const int WM_SYSCOMMAND = 274;
+            const int wM_NCLBUTTONDOWN = 161;
+            const int wM_SYSCOMMAND = 274;
             const int HTCAPTION = 2;
             const int SC_MOVE = 61456;
-
-            if ((m.Msg == WM_SYSCOMMAND) && (m.WParam.ToInt32() == SC_MOVE))
+            if (m.Msg == wM_SYSCOMMAND && m.WParam.ToInt32() == HTCAPTION)
             {
                 return;
             }
 
-            if ((m.Msg == WM_NCLBUTTONDOWN) && (m.WParam.ToInt32() == HTCAPTION))
+            if (m.Msg == wM_NCLBUTTONDOWN && m.WParam.ToInt32() == HTCAPTION)
             {
                 return;
             }
@@ -63,6 +62,13 @@ namespace Archie
                     _invApp = (Inventor.Application)Marshal.GetActiveObject("Inventor.Application");
                     _invApp.UserInterfaceManager.RibbonDockingState = RibbonDockingStateEnum.kDockToLeft;
 
+                    /*PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+                    PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                    oCompDef = oPartDoc.ComponentDefinition;
+                    foreach (Inventor.PartFeature oFeat in oCompDef.Features)
+                    {
+                        oFeat.Delete();
+                    }*/
                 }
                 catch (Exception ex)
                 {
@@ -105,15 +111,23 @@ namespace Archie
             }
             else if (num == 2)
             {
-                this.BeginInvoke(new LineReceivedEvent(ExtrudeSketch), x, y);
+                //this.BeginInvoke(new LineReceivedEvent(ExtrudeSketch), x, y);
             }
             else if (num == 3)
             {
-                this.BeginInvoke(new LineReceivedEvent(ExtrudeOnly), x, y);
+                this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
             }
             else if (num == 0)
             {
                 this.BeginInvoke(new LineReceivedEvent(ClickHand), x, y);
+            }
+            else if(num == 4)
+            {
+                this.BeginInvoke(new LineReceivedEvent(moving), x, y);
+            }
+            else if(num == 1)
+            {
+                this.BeginInvoke(new LineReceivedEvent(rotateG), x, y);
             }
         }
 
@@ -251,18 +265,6 @@ namespace Archie
             oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
         }
 
-        private void SketchOnly(int x, int y)
-        {
-            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
-
-            PartComponentDefinition oCompDef = default(PartComponentDefinition);
-            oCompDef = oPartDoc.ComponentDefinition;
-
-            PlanarSketch oSketch = default(PlanarSketch);
-            oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[1]);
-            oSketch.SketchLines.AddAsTwoPointRectangle(_invApp.TransientGeometry.CreatePoint2d(-x, -y), _invApp.TransientGeometry.CreatePoint2d(x, y));
-        }
-
         private void ExtrudeOnly(int x, int y)
         {
             PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
@@ -275,10 +277,100 @@ namespace Archie
             oExtrude.SetDistanceExtent(x, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
         }
 
+        private void ExtrudeDoub(int x, int y)
+        {
+            try
+            {
+                PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+
+                PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                oCompDef = oPartDoc.ComponentDefinition;
+
+                ExtrudeFeature oExtrude = default(ExtrudeFeature);
+                oExtrude = oCompDef.Features.ExtrudeFeatures[1];
+                oExtrude.SetDistanceExtent(x, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+            }
+
+            catch (System.ArgumentException)
+            {
+                PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+
+                PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                oCompDef = oPartDoc.ComponentDefinition;
+
+                PlanarSketch oSketch = default(PlanarSketch);
+                oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[1]);
+                oSketch.SketchLines.AddAsTwoPointRectangle(_invApp.TransientGeometry.CreatePoint2d(-x, -y), _invApp.TransientGeometry.CreatePoint2d(x, y));
+
+                Profile oProfile = default(Profile);
+                oProfile = oSketch.Profiles.AddForSolid();
+
+                ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+                oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kJoinOperation);
+                oExtrudeDef.SetDistanceExtent(x, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+
+                ExtrudeFeature oExtrude = default(ExtrudeFeature);
+                oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+            }
+        }
+        
+        private void moving(int x, int y)
+        {
+            if(x > 5 && y > 6) //Kuadran 2
+            {
+                movrot.TranslateView(-1, -1);
+            }
+
+            else if (x < 5 && y > 6) //kuadran 1
+            {
+                movrot.TranslateView(1, -1);
+            }
+
+            else if (x < 5 && y < 6) //kuadran 3
+            {
+                movrot.TranslateView(1, 1);
+            }
+
+            else if (x > 5 && y < 6) //kuadran 3
+            {
+                movrot.TranslateView(-1, 1);
+            }
+        }
+
+        private void rotateG(int x, int y)
+        {
+            if (x > 5 && y > 6) //Kuadran 2
+            {
+                movrot.ChangeView(1, 0, 0, apply: false);
+            }
+
+            else if (x < 5 && y > 6) //kuadran 1
+            {
+                movrot.ChangeView(-1, 0, 0, apply: false);
+            }
+
+            else if (x < 5 && y < 6) //kuadran 3
+            {
+                movrot.ChangeView(0, 1, 0, apply: false);
+            }
+
+            else if (x > 5 && y < 6) //kuadran 3
+            {
+                movrot.ChangeView(0, -1, 0, apply: false);
+            }
+        }
         private void button2_Click(object sender, EventArgs e)
         {
-            //ExtrudeOnly();
-            movrot.ChangeView(4, 5, 7, apply:true);
+            try
+            {
+                ExtrudeDoub(19, 30);
+                //movrot.ChangeView(int.Parse(textBox2.Text), int.Parse(textBox3.Text), int.Parse(textBox4.Text), apply: true);
+                //movrot.TranslateView(int.Parse(textBox2.Text), int.Parse(textBox3.Text));
+            }
+            catch (System.FormatException)
+            {
+                return;
+            }
         }
 
 
