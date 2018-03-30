@@ -1,0 +1,12 @@
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\bin\Debug\Archie.exe
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\bin\Debug\Archie.pdb
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.csprojResolveAssemblyReference.cache
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Interop.InventorApprentice.dll
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Interop.InventorViewControlLib.dll
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.csproj.ResolveComReference.cache
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.Properties.Resources.resources
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.csproj.GenerateResource.Cache
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.csproj.CoreCompileInputs.cache
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.exe
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.pdb
+D:\Matkul Mesin\Semester 8\Seminar dan Skripsi\Visual Studio\Bubbles\Archie\Archie\Archie\obj\Debug\Archie.Form1.resources
