@@ -20,33 +20,48 @@ namespace Archie
 {
     public partial class Form1 : Form
     {
+        protected override void WndProc(ref Message m)
+        {
+            switch (m.Msg)
+            {
+                case 0x84:
+                    base.WndProc(ref m);
+                    if ((int)m.Result == 0x1)
+                        m.Result = (IntPtr)0x2;
+                    return;
+            }
+
+            base.WndProc(ref m);
+        }
+
         public Inventor.Application _invApp;
         public Boolean _started = false;
         private InventorApprentice.ApprenticeServerComponent m_oserver;
         static SerialPort serial1 = new SerialPort("COM1", 9600);
         private MoveAndRotate_1.InventorCamera movrot = null;
+        public PartDocument oPartDoc = default(PartDocument);
 
         Inventor.ApprenticeServerDocument oDoc;
         Inventor.ApprenticeServerComponent oApp;
 
-        protected override void WndProc(ref Message m)
+        /*protected override void WndProc(ref Message m)
         {
             const int wM_NCLBUTTONDOWN = 161;
             const int wM_SYSCOMMAND = 274;
             const int HTCAPTION = 2;
             const int SC_MOVE = 61456;
-            if (m.Msg == wM_SYSCOMMAND && m.WParam.ToInt32() == HTCAPTION)
+            if ((m.Msg == wM_SYSCOMMAND) && (m.WParam.ToInt32() == SC_MOVE))
             {
                 return;
             }
 
-            if (m.Msg == wM_NCLBUTTONDOWN && m.WParam.ToInt32() == HTCAPTION)
+            if ((m.Msg == wM_NCLBUTTONDOWN) && (m.WParam.ToInt32() == HTCAPTION))
             {
                 return;
             }
 
             base.WndProc(ref m);
-        }
+        }*/
 
         public Form1()
         {
@@ -61,7 +76,7 @@ namespace Archie
                 {
                     _invApp = (Inventor.Application)Marshal.GetActiveObject("Inventor.Application");
                     _invApp.UserInterfaceManager.RibbonDockingState = RibbonDockingStateEnum.kDockToLeft;
-
+                    //oPartDoc = (PartDocument)_invApp.Documents.Add(Inventor.DocumentTypeEnum.kPartDocumentObject, _invApp.FileManager.GetTemplateFile(Inventor.DocumentTypeEnum.kPartDocumentObject));
                     /*PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
                     PartComponentDefinition oCompDef = default(PartComponentDefinition);
                     oCompDef = oPartDoc.ComponentDefinition;
@@ -101,33 +116,40 @@ namespace Archie
 
         private void serial1_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            string[] input = serial1.ReadLine().Split(',');
-            int num = int.Parse(input[0]);
-            int x = int.Parse(input[1]);
-            int y = int.Parse(input[2]);
-            if (num == 5)
+            try
             {
-                this.BeginInvoke(new LineReceivedEvent(LineReceived), x, y);
+                string[] input = serial1.ReadLine().Split(',');
+                int num = int.Parse(input[0]);
+                int x = int.Parse(input[1]);
+                int y = int.Parse(input[2]);
+                if (num == 5)
+                {
+                    this.BeginInvoke(new LineReceivedEvent(LineReceived), x, y);
+                }
+                else if (num == 2)
+                {
+                    this.BeginInvoke(new LineReceivedEvent(CircleSketch), x, y);
+                }
+                else if (num == 3)
+                {
+                    this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
+                }
+                else if (num == 0)
+                {
+                    this.BeginInvoke(new LineReceivedEvent(ClickHand), x, y);
+                }
+                else if (num == 4)
+                {
+                    this.BeginInvoke(new LineReceivedEvent(moving), x, y);
+                }
+                else if (num == 1)
+                {
+                    this.BeginInvoke(new LineReceivedEvent(rotateG), x, y);
+                }
             }
-            else if (num == 2)
+            catch
             {
-                //this.BeginInvoke(new LineReceivedEvent(ExtrudeSketch), x, y);
-            }
-            else if (num == 3)
-            {
-                this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
-            }
-            else if (num == 0)
-            {
-                this.BeginInvoke(new LineReceivedEvent(ClickHand), x, y);
-            }
-            else if(num == 4)
-            {
-                this.BeginInvoke(new LineReceivedEvent(moving), x, y);
-            }
-            else if(num == 1)
-            {
-                this.BeginInvoke(new LineReceivedEvent(rotateG), x, y);
+                return;
             }
         }
 
@@ -274,7 +296,7 @@ namespace Archie
 
             ExtrudeFeature oExtrude = default(ExtrudeFeature);
             oExtrude = oCompDef.Features.ExtrudeFeatures["Extrusion1"];
-            oExtrude.SetDistanceExtent(x, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+            oExtrude.SetDistanceExtent(x, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);    
         }
 
         private void ExtrudeDoub(int x, int y)
@@ -289,6 +311,15 @@ namespace Archie
                 ExtrudeFeature oExtrude = default(ExtrudeFeature);
                 oExtrude = oCompDef.Features.ExtrudeFeatures[1];
                 oExtrude.SetDistanceExtent(x, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+
+                Random r = new Random();
+                int rand = r.Next(1, 20);
+
+                if (rand > 18)
+                {
+                    movrot.ChangeView(1, 0, 0, apply: false);
+                }
+
             }
 
             catch (System.ArgumentException)
@@ -359,11 +390,73 @@ namespace Archie
                 movrot.ChangeView(0, -1, 0, apply: false);
             }
         }
+
+        private void CircleSketch(int x, int y)
+        {
+           
+            try
+            {
+                PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+
+                PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                oCompDef = oPartDoc.ComponentDefinition;
+
+                PlanarSketch oSketch = default(PlanarSketch);
+                oSketch = oCompDef.Sketches[1];
+                oSketch.SketchCircles[1].Radius = x;
+                oSketch.SketchCircles[2].Radius = x-2;
+
+                Profile oProfile = default(Profile);
+                oProfile = oSketch.Profiles.AddForSolid();
+
+                ExtrudeFeature oExtrude = default(ExtrudeFeature);
+                oExtrude = oCompDef.Features.ExtrudeFeatures[1];
+                oExtrude.Definition.Profile = oProfile;
+                oExtrude.Definition.SetDistanceExtent(y, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+                /*ExtrudeFeature oExtrude = default(ExtrudeFeature);
+                oExtrude = oCompDef.Features.ExtrudeFeatures[1];     
+                oExtrude.*/
+                Random r = new Random();
+                int rand = r.Next(1, 20);
+
+                if (rand > 18)
+                {
+                    movrot.ChangeView(1, 0, 0, apply: false);
+                }
+            }
+
+            catch
+            {
+                PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+
+                PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                oCompDef = oPartDoc.ComponentDefinition;
+
+                PlanarSketch oSketch = default(PlanarSketch);
+                oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[1]);
+                oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), x);
+                oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), x - 2);
+                
+                Profile oProfile = default(Profile);
+                oProfile = oSketch.Profiles.AddForSolid();
+
+                ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+                oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kJoinOperation);
+                oExtrudeDef.SetDistanceExtent(y, Inventor.PartFeatureExtentDirectionEnum.kSymmetricExtentDirection);
+
+                ExtrudeFeature oExtrude = default(ExtrudeFeature);
+                oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+
+            }
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
             try
             {
-                ExtrudeDoub(19, 30);
+                //ExtrudeDoub(19, 30);
+                CircleSketch(6,8);
+                movrot.GetCurrentCamera();
                 //movrot.ChangeView(int.Parse(textBox2.Text), int.Parse(textBox3.Text), int.Parse(textBox4.Text), apply: true);
                 //movrot.TranslateView(int.Parse(textBox2.Text), int.Parse(textBox3.Text));
             }
