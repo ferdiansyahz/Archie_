@@ -131,13 +131,13 @@ namespace Archie
                 else if (num == 2)
                 {
                     //this.BeginInvoke(new LineReceivedEvent(CircleSketch), x, y);
-                    PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+                    /*PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
                     PartComponentDefinition oCompDef = default(PartComponentDefinition);
                     oCompDef = oPartDoc.ComponentDefinition;
                     foreach (Inventor.PartFeature oFeat in oCompDef.Features)
                     {
                         oFeat.Delete();
-                    }
+                    }*/
                 }
                 else if (num == 3)
                 {
@@ -146,6 +146,7 @@ namespace Archie
                 else if (num == 0)
                 {
                     //this.BeginInvoke(new LineReceivedEvent(ClickHand), x, y);
+                    this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
                 }
                 else if (num == 4)
                 {
@@ -489,6 +490,127 @@ namespace Archie
             }
         }
 
+        private void Feature1()
+        {
+            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+            PartComponentDefinition oCompDef = default(PartComponentDefinition);
+            oCompDef = oPartDoc.ComponentDefinition;
+
+            PlanarSketch oSketch = default(PlanarSketch);
+            oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[3]);
+            oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 6);
+            oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 8);
+
+            Profile oProfile = default(Profile);
+            oProfile = oSketch.Profiles.AddForSolid();
+
+            ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+            oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kJoinOperation);
+            oExtrudeDef.SetDistanceExtent(14, Inventor.PartFeatureExtentDirectionEnum.kPositiveExtentDirection);
+
+            ExtrudeFeature oExtrude = default(ExtrudeFeature);
+            oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+        }
+
+        private void Feature2()
+        {
+            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+            PartComponentDefinition oCompDef = default(PartComponentDefinition);
+            oCompDef = oPartDoc.ComponentDefinition;
+
+            PlanarSketch oSketch = default(PlanarSketch);
+            oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[3]);
+            oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 15);
+            oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 17.5);
+
+            Profile oProfile = default(Profile);
+            oProfile = oSketch.Profiles.AddForSolid();
+
+            ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+            oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kJoinOperation);
+            oExtrudeDef.SetDistanceExtent(14, Inventor.PartFeatureExtentDirectionEnum.kPositiveExtentDirection);
+
+            ExtrudeFeature oExtrude = default(ExtrudeFeature);
+            oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+        }
+
+        private void Feature3()
+        {
+            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+            PartComponentDefinition oCompDef = default(PartComponentDefinition);
+            oCompDef = oPartDoc.ComponentDefinition;
+
+            PlanarSketch oSketch = default(PlanarSketch);
+            oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[3]);
+            oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 6);
+            oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 17.5);
+
+            Profile oProfile = default(Profile);
+            oProfile = oSketch.Profiles.AddForSolid();
+
+            ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+            oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kJoinOperation);
+            oExtrudeDef.SetDistanceExtent(3, Inventor.PartFeatureExtentDirectionEnum.kPositiveExtentDirection);
+
+            ExtrudeFeature oExtrude = default(ExtrudeFeature);
+            oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+        }
+
+        private void Feature4()
+        {
+            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+            PartComponentDefinition oCompDef = default(PartComponentDefinition);
+            oCompDef = oPartDoc.ComponentDefinition;
+            //Inventor.Point2d point1 = _invApp.TransientGeometry.CreatePoint2d(6, 13.8);
+            //Inventor.Point2d point2 = _invApp.TransientGeometry.CreatePoint2d(-6, 13.8);
+            PlanarSketch oSketch = default(PlanarSketch);
+            oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[3]);
+            SketchArc arc1 = oSketch.SketchArcs.AddByThreePoints(_invApp.TransientGeometry.CreatePoint2d(5.879, 13.8),_invApp.TransientGeometry.CreatePoint2d(0,15) , _invApp.TransientGeometry.CreatePoint2d(-5.879, 13.8));
+            SketchArc arc2 = oSketch.SketchArcs.AddByThreePoints(arc1.StartSketchPoint, _invApp.TransientGeometry.CreatePoint2d(0,9), arc1.EndSketchPoint);
+            //oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 15);
+            //oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 15), 6);
+            
+            Profile oProfile = default(Profile);
+            oProfile = oSketch.Profiles.AddForSolid();
+            //oProfile = oSketch.Profiles.AddForSurface(arc2);
+
+            ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+            oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kCutOperation);
+            oExtrudeDef.SetDistanceExtent(3, Inventor.PartFeatureExtentDirectionEnum.kPositiveExtentDirection);
+
+            ExtrudeFeature oExtrude = default(ExtrudeFeature);
+            oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+            
+        }
+
+        private void Feature5()
+        {
+            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+            PartComponentDefinition oCompDef = default(PartComponentDefinition);
+            oCompDef = oPartDoc.ComponentDefinition;
+            Inventor.ObjectCollection objCol = default(Inventor.ObjectCollection);
+            objCol = _invApp.TransientObjects.CreateObjectCollection();
+            objCol.Add(oCompDef.Features[4]);
+           
+            oCompDef.Features.CircularPatternFeatures.Add(ParentFeatures:objCol, AxisEntity:oCompDef.WorkAxes[3], NaturalAxisDirection:true, Count:6, Angle: 360 * 0.0174532925, FitWithinAngle:true, ComputeType: Inventor.PatternComputeTypeEnum.kIdenticalCompute);
+           
+        }
+
+        private void SaveCSV(int x, int y)
+        {
+            StringBuilder csvcontent = new StringBuilder();
+            string csvpath = "D:\\CSVFile\\ImprosData\\XYData_1.csv";
+
+            var newline = String.Format("{0},{1},{2},{3},{4},{5},{6}", DateTime.Now.ToString("HH:mm:ss tt"), "X", x, " ", "y", y, System.Environment.NewLine);
+
+            System.IO.File.AppendAllText(csvpath, csvcontent.ToString());
+        }
+
         private void button2_Click(object sender, EventArgs e)
         {
             try
@@ -510,6 +632,15 @@ namespace Archie
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
             _invApp.UserInterfaceManager.RibbonDockingState = RibbonDockingStateEnum.kDockToTop;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            Feature1();
+            Feature2();
+            Feature3();
+            Feature4();
+            Feature5();
         }
     }
 }
