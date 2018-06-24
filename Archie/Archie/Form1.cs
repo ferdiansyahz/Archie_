@@ -14,7 +14,7 @@ using Microsoft.Win32;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Archie
 {
@@ -43,7 +43,8 @@ namespace Archie
 
         Inventor.ApprenticeServerDocument oDoc;
         Inventor.ApprenticeServerComponent oApp;
-
+        Stopwatch stopwatch = new Stopwatch();
+        
         /*protected override void WndProc(ref Message m)
         {
             const int wM_NCLBUTTONDOWN = 161;
@@ -84,6 +85,8 @@ namespace Archie
                     {
                         oFeat.Delete();
                     }
+                    movrot = new MoveAndRotate_1.InventorCamera();
+                    movrot.GetCurrentCamera();
                 }
                 catch (Exception ex)
                 {
@@ -94,6 +97,8 @@ namespace Archie
                         _invApp = (Inventor.Application)Activator.CreateInstance(invAppType);
                         _invApp.Visible = true;
                         _started = true;
+                        movrot = new MoveAndRotate_1.InventorCamera();
+                        movrot.GetCurrentCamera();
                     }
                     catch (Exception ex2)
                     {
@@ -119,13 +124,25 @@ namespace Archie
             try
             {
                 string[] input = serial1.ReadLine().Split(',');
+                
                 int num = int.Parse(input[0]);
                 int x = int.Parse(input[1]);
                 int y = int.Parse(input[2]);
+                
                 if (num == 5)
                 {
                     //this.BeginInvoke(new LineReceivedEvent(LineReceived), x, y);
-                    this.BeginInvoke(new LineReceivedEvent(CircleSketch), x, y);
+                    //this.BeginInvoke(new LineReceivedEvent(CircleSketch), x, y);
+                    try
+                    {
+                        this.BeginInvoke(new LineReceivedEvent(Feature1), x, y);
+                        movrot.ReturnHome();
+                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                    }
+                    catch
+                    {
+
+                    }
 
                 }
                 else if (num == 2)
@@ -138,25 +155,71 @@ namespace Archie
                     {
                         oFeat.Delete();
                     }*/
+                    try
+                    { 
+                        this.BeginInvoke(new LineReceivedEvent(Feature2), x, y);
+                        movrot.ReturnHome();
+                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                    }
+                    catch
+                    {
+
+                    }
                 }
                 else if (num == 3)
                 {
-                    this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
+                    //this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
+                    try
+                    {
+                        this.BeginInvoke(new LineReceivedEvent(Feature3), x, y);
+                        movrot.ReturnHome();
+                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                    }
+                    catch
+                    {
+
+                    }
                 }
-                else if (num == 0)
+                else if (num == 1)
                 {
                     //this.BeginInvoke(new LineReceivedEvent(ClickHand), x, y);
+                    //this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);  
                     this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
                 }
                 else if (num == 4)
                 {
                     //this.BeginInvoke(new LineReceivedEvent(moving), x, y);
-                    this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
+                    //this.BeginInvoke(new LineReceivedEvent(ExtrudeDoub), x, y);
+                    try
+                    {
+                        this.BeginInvoke(new LineReceivedEvent(Feature4), x, y);
+                        movrot.ReturnHome();
+                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                    }
+                    catch
+                    {
+
+                    }
                 }
-                else if (num == 1)
+                else if (num == 0)
                 {
-                    this.BeginInvoke(new LineReceivedEvent(rotateG), x, y);
+                    //this.BeginInvoke(new LineReceivedEvent(rotateG), x, y);
+                    try
+                    {
+                        this.BeginInvoke(new LineReceivedEvent(Feature5), x, y);
+                        movrot.ReturnHome();
+                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                    }
+                    catch
+                    {
+
+                    }
                 }
+                else
+                {
+                    this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                }
+                this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
             }
             catch
             {
@@ -168,8 +231,10 @@ namespace Archie
 
         private void LineReceived(int x, int y)
         {
-            System.Windows.Forms.Cursor.Position = new System.Drawing.Point(x, y);
-            DoClickMouse(0x4);
+            //System.Windows.Forms.Cursor.Position = new System.Drawing.Point(x, y);
+            //DoClickMouse(0x4);
+            SaveCSV_SerialRead();
+            SaveCSV(x, y);
         }
 
         private void ClickHand(int x, int y)
@@ -490,7 +555,7 @@ namespace Archie
             }
         }
 
-        private void Feature1()
+        private void Feature1(int x, int y)
         {
             PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
             oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
@@ -513,7 +578,7 @@ namespace Archie
             oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
         }
 
-        private void Feature2()
+        private void Feature2(int x, int y)
         {
             PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
             oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
@@ -536,7 +601,7 @@ namespace Archie
             oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
         }
 
-        private void Feature3()
+        private void Feature3(int x, int y)
         {
             PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
             oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
@@ -559,45 +624,92 @@ namespace Archie
             oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
         }
 
-        private void Feature4()
+        private void Feature4(int x, int y)
         {
-            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
-            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
-            PartComponentDefinition oCompDef = default(PartComponentDefinition);
-            oCompDef = oPartDoc.ComponentDefinition;
-            //Inventor.Point2d point1 = _invApp.TransientGeometry.CreatePoint2d(6, 13.8);
-            //Inventor.Point2d point2 = _invApp.TransientGeometry.CreatePoint2d(-6, 13.8);
-            PlanarSketch oSketch = default(PlanarSketch);
-            oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[3]);
-            SketchArc arc1 = oSketch.SketchArcs.AddByThreePoints(_invApp.TransientGeometry.CreatePoint2d(5.879, 13.8),_invApp.TransientGeometry.CreatePoint2d(0,15) , _invApp.TransientGeometry.CreatePoint2d(-5.879, 13.8));
-            SketchArc arc2 = oSketch.SketchArcs.AddByThreePoints(arc1.StartSketchPoint, _invApp.TransientGeometry.CreatePoint2d(0,9), arc1.EndSketchPoint);
-            //oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 15);
-            //oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 15), 6);
-            
-            Profile oProfile = default(Profile);
-            oProfile = oSketch.Profiles.AddForSolid();
-            //oProfile = oSketch.Profiles.AddForSurface(arc2);
+            try
+            {
+                PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+                oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+                PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                oCompDef = oPartDoc.ComponentDefinition;
+                //Inventor.Point2d point1 = _invApp.TransientGeometry.CreatePoint2d(6, 13.8);
+                //Inventor.Point2d point2 = _invApp.TransientGeometry.CreatePoint2d(-6, 13.8);
+                PlanarSketch oSketch = default(PlanarSketch);
+                oSketch = oCompDef.Sketches.Add(oCompDef.WorkPlanes[3]);
+                SketchArc arc1 = oSketch.SketchArcs.AddByThreePoints(_invApp.TransientGeometry.CreatePoint2d(5.879, 13.8), _invApp.TransientGeometry.CreatePoint2d(0, 15), _invApp.TransientGeometry.CreatePoint2d(-5.879, 13.8));
+                SketchArc arc2 = oSketch.SketchArcs.AddByThreePoints(arc1.StartSketchPoint, _invApp.TransientGeometry.CreatePoint2d(0, 9), arc1.EndSketchPoint);
+                //oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 0), 15);
+                //oSketch.SketchCircles.AddByCenterRadius(_invApp.TransientGeometry.CreatePoint2d(0, 15), 6);
 
-            ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
-            oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kCutOperation);
-            oExtrudeDef.SetDistanceExtent(3, Inventor.PartFeatureExtentDirectionEnum.kPositiveExtentDirection);
+                Profile oProfile = default(Profile);
+                oProfile = oSketch.Profiles.AddForSolid();
+                //oProfile = oSketch.Profiles.AddForSurface(arc2);
 
-            ExtrudeFeature oExtrude = default(ExtrudeFeature);
-            oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+                ExtrudeDefinition oExtrudeDef = default(ExtrudeDefinition);
+                oExtrudeDef = oCompDef.Features.ExtrudeFeatures.CreateExtrudeDefinition(oProfile, Inventor.PartFeatureOperationEnum.kCutOperation);
+                oExtrudeDef.SetDistanceExtent(3, Inventor.PartFeatureExtentDirectionEnum.kPositiveExtentDirection);
+
+                ExtrudeFeature oExtrude = default(ExtrudeFeature);
+                oExtrude = oCompDef.Features.ExtrudeFeatures.Add(oExtrudeDef);
+            }
+            catch
+            {
+                try
+                {
+                    Feature3(x, y);
+                }
+                catch
+                {
+                    Feature2(x, y);
+                }
+            }
             
         }
 
-        private void Feature5()
+        private void Feature5(int x, int y)
         {
-            PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
-            oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
-            PartComponentDefinition oCompDef = default(PartComponentDefinition);
-            oCompDef = oPartDoc.ComponentDefinition;
-            Inventor.ObjectCollection objCol = default(Inventor.ObjectCollection);
-            objCol = _invApp.TransientObjects.CreateObjectCollection();
-            objCol.Add(oCompDef.Features[4]);
-           
-            oCompDef.Features.CircularPatternFeatures.Add(ParentFeatures:objCol, AxisEntity:oCompDef.WorkAxes[3], NaturalAxisDirection:true, Count:6, Angle: 360 * 0.0174532925, FitWithinAngle:true, ComputeType: Inventor.PatternComputeTypeEnum.kIdenticalCompute);
+            try
+            {
+                PartDocument oPartDoc = (PartDocument)_invApp.ActiveDocument;
+                oPartDoc.UnitsOfMeasure.LengthUnits = Inventor.UnitsTypeEnum.kMillimeterLengthUnits;
+                PartComponentDefinition oCompDef = default(PartComponentDefinition);
+                oCompDef = oPartDoc.ComponentDefinition;
+                Inventor.ObjectCollection objCol = default(Inventor.ObjectCollection);
+                objCol = _invApp.TransientObjects.CreateObjectCollection();
+                objCol.Add(oCompDef.Features[4]);
+                oCompDef.Features.CircularPatternFeatures.Add(ParentFeatures: objCol, AxisEntity: oCompDef.WorkAxes[3], NaturalAxisDirection: true, Count: 6, Angle: 360 * 0.0174532925, FitWithinAngle: true, ComputeType: Inventor.PatternComputeTypeEnum.kIdenticalCompute);
+
+                serial1.Close();
+                pictureBox2.Enabled = false;
+                label2.Enabled = false;
+                pictureBox1.Enabled = true;
+                label1.Enabled = true;
+
+                MessageBox.Show(this,
+                  "Good job! Your design is finished",
+                  "Finish",
+                  MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            catch
+            {
+                try
+                {
+                    Feature4(x, y);
+                }
+                catch
+                {
+                    try
+                    {
+                        Feature3(x, y);
+                    }
+                    catch
+                    {
+                        Feature2(x, y);
+                    }
+                }
+
+            }
            
         }
 
@@ -607,6 +719,16 @@ namespace Archie
             string csvpath = "D:\\CSVFile\\ImprosData\\XYData_1.csv";
 
             var newline = String.Format("{0},{1},{2},{3},{4},{5},{6}", DateTime.Now.ToString("HH:mm:ss tt"), "X", x, " ", "y", y, System.Environment.NewLine);
+
+            System.IO.File.AppendAllText(csvpath, csvcontent.ToString());
+        }
+
+        private void SaveCSV_SerialRead()
+        {
+            StringBuilder csvcontent = new StringBuilder();
+            string csvpath = "D:\\CSVFile\\ImprosData\\SerialRead_Calc.csv";
+
+            var newline = String.Format("{0},{1}", DateTime.Now.ToString("HH:mm:ss tt"), System.Environment.NewLine);
 
             System.IO.File.AppendAllText(csvpath, csvcontent.ToString());
         }
@@ -636,11 +758,15 @@ namespace Archie
 
         private void button3_Click(object sender, EventArgs e)
         {
-            Feature1();
+            stopwatch.Start();
+            /*Feature1();
             Feature2();
             Feature3();
             Feature4();
-            Feature5();
+            Feature5();*/
+            Thread.Sleep(500);
+            stopwatch.Stop();
+            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
         }
     }
 }
