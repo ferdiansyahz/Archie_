@@ -13,7 +13,6 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using System.IO;
 using System.IO.Ports;
-using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace Archie
@@ -128,16 +127,17 @@ namespace Archie
                 int num = int.Parse(input[0]);
                 int x = int.Parse(input[1]);
                 int y = int.Parse(input[2]);
-                
+                //this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+
                 if (num == 5)
                 {
                     //this.BeginInvoke(new LineReceivedEvent(LineReceived), x, y);
                     //this.BeginInvoke(new LineReceivedEvent(CircleSketch), x, y);
                     try
                     {
-                        this.BeginInvoke(new LineReceivedEvent(Feature1), x, y);
                         movrot.ReturnHome();
-                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                        this.BeginInvoke(new LineReceivedEvent(Feature1), x, y);
+                        
                     }
                     catch
                     {
@@ -156,10 +156,10 @@ namespace Archie
                         oFeat.Delete();
                     }*/
                     try
-                    { 
+                    {
+                        movrot.RotateCube("LEFT");
                         this.BeginInvoke(new LineReceivedEvent(Feature2), x, y);
-                        movrot.ReturnHome();
-                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                        
                     }
                     catch
                     {
@@ -172,8 +172,7 @@ namespace Archie
                     try
                     {
                         this.BeginInvoke(new LineReceivedEvent(Feature3), x, y);
-                        movrot.ReturnHome();
-                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                  
                     }
                     catch
                     {
@@ -184,7 +183,7 @@ namespace Archie
                 {
                     //this.BeginInvoke(new LineReceivedEvent(ClickHand), x, y);
                     //this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);  
-                    this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                 
                 }
                 else if (num == 4)
                 {
@@ -193,8 +192,7 @@ namespace Archie
                     try
                     {
                         this.BeginInvoke(new LineReceivedEvent(Feature4), x, y);
-                        movrot.ReturnHome();
-                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+                       
                     }
                     catch
                     {
@@ -207,19 +205,16 @@ namespace Archie
                     try
                     {
                         this.BeginInvoke(new LineReceivedEvent(Feature5), x, y);
+                        movrot.RotateCube("LEFT");
                         movrot.ReturnHome();
-                        this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
                     }
                     catch
                     {
 
                     }
                 }
-                else
-                {
-                    this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
-                }
-                this.BeginInvoke(new LineReceivedEvent(SaveCSV), x, y);
+            
+                
             }
             catch
             {
@@ -718,8 +713,9 @@ namespace Archie
             StringBuilder csvcontent = new StringBuilder();
             string csvpath = "D:\\CSVFile\\ImprosData\\XYData_1.csv";
 
-            var newline = String.Format("{0},{1},{2},{3},{4},{5},{6}", DateTime.Now.ToString("HH:mm:ss tt"), "X", x, " ", "y", y, System.Environment.NewLine);
-
+            //var newline = String.Format("{0},{1},{2},{3},{4},{5},{6}", DateTime.Now.ToString("HH:mm:ss.fff tt"), "X", x.ToString(), " ", "y", y.ToString(), System.Environment.NewLine);
+            var newline = String.Format("{0},{1}", DateTime.Now.ToString("ss.fff tt"), System.Environment.NewLine);
+            csvcontent.Append(newline);
             System.IO.File.AppendAllText(csvpath, csvcontent.ToString());
         }
 
@@ -758,15 +754,16 @@ namespace Archie
 
         private void button3_Click(object sender, EventArgs e)
         {
-            stopwatch.Start();
-            /*Feature1();
+            /*stopwatch.Start();
+            Feature1();
             Feature2();
             Feature3();
             Feature4();
-            Feature5();*/
+            Feature5();
             Thread.Sleep(500);
             stopwatch.Stop();
-            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);
+            Console.WriteLine("Time elapsed: {0}", stopwatch.Elapsed);*/
+            
         }
     }
 }
